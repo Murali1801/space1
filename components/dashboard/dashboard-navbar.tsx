@@ -26,8 +26,8 @@ export function DashboardNavbar() {
     }
 
     return (
-        <header className="fixed top-0 left-0 right-0 z-40 p-4">
-            <nav className="max-w-5xl mx-auto flex items-center justify-between h-14 px-6 rounded-full bg-white/50 dark:bg-black/50 border border-zinc-200 dark:border-zinc-800/50 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/5 relative">
+        <header className="fixed top-0 left-0 right-0 z-40 px-6 py-4">
+            <nav className="w-full flex items-center justify-between h-14 px-6 rounded-full bg-white/50 dark:bg-black/50 border border-zinc-200 dark:border-zinc-800/50 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/5 relative">
                 <Link href="/dashboard" className="flex items-center gap-2 font-display text-lg font-semibold text-zinc-900 dark:text-zinc-100 z-50">
                     <span className="text-xl">Space</span>
                 </Link>
@@ -65,7 +65,7 @@ export function DashboardNavbar() {
                         className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 z-50"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     >
-                        {isMobileMenuOpen ? <X /> : <Menu />}
+                        {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
                 </div>
 

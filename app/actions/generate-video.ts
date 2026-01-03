@@ -2,7 +2,13 @@
 
 import { GoogleAuth } from "google-auth-library"
 
-export async function generateVideo(prompt: string, duration = 8, withAudio = true, modelId = "veo-3.0-generate-001") {
+export async function generateVideo(
+    prompt: string,
+    duration = 8,
+    withAudio = true,
+    modelId = "veo-3.0-generate-001",
+    options: { aspectRatio?: string, userId?: string } = {}
+) {
     try {
         // Randomly select between the two keys
         const keys = [
@@ -46,9 +52,10 @@ export async function generateVideo(prompt: string, duration = 8, withAudio = tr
                 instances: [{ prompt }],
                 parameters: {
                     sampleCount: 1,
-                    resolution: "1080p",
+                    resolution: "1080p", // Defaulting to 1080p as per user preference likely
                     generateAudio: withAudio,
-                    durationSeconds: duration
+                    durationSeconds: duration,
+                    aspectRatio: options.aspectRatio || "16:9",
                 },
             },
         })
@@ -96,15 +103,18 @@ export async function generateVideo(prompt: string, duration = 8, withAudio = tr
                         try {
                             const { uploadToCloudinary } = await import("@/lib/cloudinary")
                             if (process.env.CLOUDINARY_API_SECRET) {
-                                finalUrl = await uploadToCloudinary(base64Url, 'videos')
+                                const folderPath = `space/user_${options.userId || 'anonymous'}/videos`
+                                finalUrl = await uploadToCloudinary(base64Url, 'videos', folderPath)
                                 isCloudinary = true
+                            } else {
+                                console.warn("Cloudinary credentials missing. specific-video-saving disabled.")
+                                finalUrl = base64Url
                             }
                         } catch (e) {
-                            console.warn("Cloudinary upload failed", e)
+                            console.error("Cloudinary upload failed, falling back to base64:", e)
+                            finalUrl = base64Url
                         }
                     } else if (vid.gcsUri) {
-                        // GCS URI is not directly viewable without public access, usually
-                        // But for now return it
                         finalUrl = vid.gcsUri
                     }
 
@@ -112,7 +122,8 @@ export async function generateVideo(prompt: string, duration = 8, withAudio = tr
                         return {
                             success: true,
                             videoUrl: finalUrl,
-                            isCloudinary
+                            isCloudinary,
+                            storeInHistory: isCloudinary // Only save if we have a cloud URL
                         }
                     }
                 }

@@ -6,19 +6,30 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function uploadToCloudinary(file: string, folder: 'images' | 'videos') {
+export async function uploadToCloudinary(file: string, type: 'images' | 'videos', folderPath: string) {
     if (!process.env.CLOUDINARY_API_SECRET) {
         throw new Error("Missing Cloudinary Credentials");
     }
 
     try {
-        const result = await cloudinary.uploader.upload(file, {
-            folder: `ai-saas/${folder}`,
-            resource_type: folder === 'videos' ? 'video' : 'image',
-        });
+        let result: any;
+        const options = {
+            folder: folderPath,
+            resource_type: (type === 'videos' ? 'video' : 'image') as 'video' | 'image',
+        };
+
+        if (type === 'videos') {
+            result = await cloudinary.uploader.upload_large(file, options);
+        } else {
+            result = await cloudinary.uploader.upload(file, options);
+        }
+
         return result.secure_url;
-    } catch (error) {
-        console.error("Cloudinary Upload Error:", error);
+    } catch (error: any) {
+        console.error("Cloudinary Upload Error Details:");
+        console.error("- Message:", error.message);
+        console.error("- HTTP Code:", error.http_code);
+        console.error("- Cloud Name:", process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME);
         throw error;
     }
 }

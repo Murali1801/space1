@@ -2,9 +2,17 @@
 
 import { GoogleAuth } from "google-auth-library"
 
-export async function generateImage(prompt: string, modelId = 'gemini-3-pro-image-preview', quality = "Standard") {
+export async function generateImage(
+    prompt: string,
+    modelId = 'imagen-3.0-generate-001',
+    options: {
+        sampleImageSize?: string,
+        aspectRatio?: string,
+        userId?: string
+    } = {}
+) {
     try {
-        // Randomly select between the two keys
+        // ... (keys logic same)
         const keys = [
             process.env.GEMINI_INFERENCE_SA_KEY,
             process.env.GEMINI_INFERENCE_2_SA_KEY
@@ -30,27 +38,10 @@ export async function generateImage(prompt: string, modelId = 'gemini-3-pro-imag
         const projectId = credentials.project_id
         const location = "us-central1"
 
-        // Use the passed modelId, defaulting to a safe stable model if somehow empty
-        // The UI now passes values like "imagen-3.0-generate-001" directly
         let vertexModelId = modelId || "imagen-3.0-generate-001"
-
-        // Backward compatibility mapping (optional, but good for safety)
-        if (modelId.includes("Gemini")) {
-            if (modelId.toLowerCase().includes("flash")) {
-                vertexModelId = "imagen-3.0-fast-generate-001"
-            } else {
-                vertexModelId = "imagen-3.0-generate-001"
-            }
-        } else {
-            vertexModelId = modelId
-        }
 
         // Construct Vertex AI Prediction Endpoint
         const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${vertexModelId}:predict`
-
-        // Map 1K/2K resolution
-        let sampleImageSize = "1K"
-        if (quality.toLowerCase().includes("2k")) sampleImageSize = "2K"
 
         // Construct Payload as per Imagen Docs
         const payload = {
@@ -59,12 +50,13 @@ export async function generateImage(prompt: string, modelId = 'gemini-3-pro-imag
             ],
             parameters: {
                 sampleCount: 1,
-                sampleImageSize: sampleImageSize,
-                aspectRatio: "1:1" // Default
+                sampleImageSize: options.sampleImageSize || "1K",
+                aspectRatio: options.aspectRatio || "1:1",
             }
         }
 
         console.log(`Generating image with ${vertexModelId} on Vertex AI...`)
+        console.log("Payload:", JSON.stringify(payload, null, 2))
 
         const res = await client.request({
             url,
@@ -91,7 +83,8 @@ export async function generateImage(prompt: string, modelId = 'gemini-3-pro-imag
                 try {
                     const { uploadToCloudinary } = await import("@/lib/cloudinary")
                     if (process.env.CLOUDINARY_API_SECRET) {
-                        finalUrl = await uploadToCloudinary(base64Url, 'images')
+                        const folderPath = `space/user_${options.userId || 'anonymous'}/images`
+                        finalUrl = await uploadToCloudinary(base64Url, 'images', folderPath)
                         isCloudinary = true
                     }
                 } catch (e) {

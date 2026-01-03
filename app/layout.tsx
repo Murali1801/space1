@@ -2,8 +2,9 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Manrope } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
-import { LenisProvider } from "@/components/providers/lenis-provider"
+
 import { AuthProvider } from "@/components/auth-provider"
+import { ActivationProvider } from "@/components/activation-provider"
 import "./globals.css"
 
 const manrope = Manrope({
@@ -49,11 +50,11 @@ export default function RootLayout({
         />
       </head>
       <body className={`${manrope.variable} font-sans antialiased bg-background text-foreground`}>
-        <LenisProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <ActivationProvider>
             {children}
-          </AuthProvider>
-        </LenisProvider>
+          </ActivationProvider>
+        </AuthProvider>
         <Analytics />
       </body>
     </html>

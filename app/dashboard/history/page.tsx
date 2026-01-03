@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { collection, query, where, orderBy, getDocs } from "firebase/firestore"
+import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { useAuth } from "@/components/auth-provider"
 import { Loader2, Film, Image as ImageIcon, Download, History as HistoryIcon } from "lucide-react"
@@ -16,44 +16,57 @@ interface Generation {
     modelId: string
 }
 
+import { useRouter } from "next/navigation"
+
 export default function HistoryPage() {
     const { user } = useAuth()
     const [generations, setGenerations] = useState<Generation[]>([])
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all')
+    const router = useRouter()
 
     useEffect(() => {
-        const fetchHistory = async () => {
-            if (!user) return
+        if (!user) return
 
-            try {
-                // If I had composite index issues, I might simplify this query temporarily
-                // But assuming index is created:
-                const q = query(
-                    collection(db, "generations"),
-                    where("userId", "==", user.uid),
-                    orderBy("createdAt", "desc")
-                )
+        setLoading(true)
 
-                const querySnapshot = await getDocs(q)
+        try {
+            const q = query(
+                collection(db, "generations"),
+                where("userId", "==", user.uid),
+                orderBy("createdAt", "desc")
+            )
+
+            // Real-time listener
+            const unsubscribe = onSnapshot(q, (snapshot: any) => {
                 const items: Generation[] = []
-                querySnapshot.forEach((doc) => {
+                snapshot.forEach((doc: any) => {
                     items.push({ id: doc.id, ...doc.data() } as Generation)
                 })
                 setGenerations(items)
-            } catch (error) {
-                console.error("Error fetching history:", error)
-            } finally {
                 setLoading(false)
-            }
-        }
+            }, (error: any) => {
+                console.error("Error listening to history:", error)
+                setLoading(false)
+            })
 
-        fetchHistory()
+            return () => unsubscribe()
+        } catch (error) {
+            console.error("Setup error for history listener:", error)
+            setLoading(false)
+        }
     }, [user])
 
     const filteredGenerations = generations.filter(item =>
         filter === 'all' ? true : item.type === filter
     )
+
+    const handleItemClick = (item: Generation) => {
+        const params = new URLSearchParams()
+        params.set("prompt", item.prompt)
+        params.set("result", item.url)
+        router.push(`/dashboard/${item.type}-generation?${params.toString()}`)
+    }
 
     if (loading) {
         return (
@@ -99,7 +112,11 @@ export default function HistoryPage() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredGenerations.map((item) => (
-                        <div key={item.id} className="group relative rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1">
+                        <div
+                            key={item.id}
+                            onClick={() => handleItemClick(item)}
+                            className="group relative rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1 cursor-pointer"
+                        >
                             <div className="aspect-square relative overflow-hidden bg-zinc-950">
                                 {item.type === 'image' ? (
                                     <img
@@ -125,6 +142,7 @@ export default function HistoryPage() {
                                         <button
                                             onClick={(e) => {
                                                 e.preventDefault()
+                                                e.stopPropagation()
                                                 downloadMedia(item.url, `history-${item.type}-${item.id}.${item.type === 'image' ? 'png' : 'mp4'}`)
                                             }}
                                             className="p-2 rounded-lg bg-white text-black hover:bg-zinc-200 transition-colors transform translate-y-4 group-hover:translate-y-0 duration-300"
@@ -139,7 +157,17 @@ export default function HistoryPage() {
                             <div className="p-4 border-t border-zinc-800">
                                 <p className="text-sm text-zinc-300 line-clamp-2 leading-relaxed h-10">{item.prompt}</p>
                                 <div className="mt-3 flex items-center justify-between text-xs text-zinc-500">
-                                    <span>{new Date(item.createdAt?.seconds * 1000).toLocaleDateString()}</span>
+                                    <span>
+                                        {item.createdAt?.seconds
+                                            ? new Date(item.createdAt.seconds * 1000).toLocaleString(undefined, {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })
+                                            : 'Just now'
+                                        }
+                                    </span>
                                     <span className="uppercase tracking-wider opacity-60">{item.type}</span>
                                 </div>
                             </div>

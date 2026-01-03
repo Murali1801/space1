@@ -39,7 +39,7 @@ export default function DashboardLayout({
             <div className="relative z-10">
                 <DashboardNavbar />
                 <main className="pt-24 px-4 md:px-6 pb-12">
-                    <div className="max-w-5xl mx-auto">
+                    <div className="w-full h-full">
                         {children}
                     </div>
                 </main>
