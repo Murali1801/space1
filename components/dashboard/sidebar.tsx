@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Sparkles, LayoutDashboard, Image as ImageIcon, Video, History, User, Settings, LogOut } from "lucide-react"
+import { LayoutDashboard, Image as ImageIcon, Video, History, User, Settings, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navigation = [
@@ -20,8 +21,10 @@ export function DashboardSidebar() {
     return (
         <div className="flex h-full w-64 flex-col bg-zinc-950 border-r border-zinc-800">
             <div className="flex h-16 items-center px-6">
-                <Link href="/" className="flex items-center gap-2">
-                    <Sparkles className="h-6 w-6 text-zinc-100" />
+                <Link href="/" className="flex items-center gap-3">
+                    <div className="relative w-8 h-8 rounded-lg overflow-hidden">
+                        <Image src="/logo.png" alt="Space Logo" fill className="object-cover" />
+                    </div>
                     <span className="text-xl font-bold font-display text-zinc-100">Space</span>
                 </Link>
             </div>

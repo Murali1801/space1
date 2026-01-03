@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Github, Twitter, Linkedin } from "lucide-react"
 
 const footerLinks = {
@@ -28,9 +29,9 @@ export function FooterSection() {
         <div className="grid grid-cols-2 lg:grid-cols-12 gap-12 mb-20">
           {/* Brand */}
           <div className="col-span-2 lg:col-span-4">
-            <Link href="/" className="flex items-center gap-2 group mb-6">
-              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center group-hover:scale-105 transition-transform">
-                <div className="w-4 h-4 bg-zinc-950 rounded-sm rotate-45" />
+            <Link href="/" className="flex items-center gap-3 group mb-6">
+              <div className="relative w-8 h-8 rounded-lg overflow-hidden group-hover:scale-105 transition-transform">
+                <Image src="/logo.png" alt="Space Logo" fill className="object-cover" />
               </div>
               <span className="font-display text-xl font-bold text-white tracking-tight leading-none">SPACE</span>
             </Link>

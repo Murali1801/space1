@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -16,9 +17,9 @@ export function Navbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 pt-6 px-6">
       <nav className="max-w-7xl mx-auto flex items-center justify-between h-16 px-8 rounded-2xl bg-zinc-950 border border-zinc-800 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center group-hover:scale-105 transition-transform">
-            <div className="w-4 h-4 bg-zinc-950 rounded-sm rotate-45" />
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="relative w-8 h-8 rounded-lg overflow-hidden group-hover:scale-105 transition-transform">
+            <Image src="/logo.png" alt="Space Logo" fill className="object-cover" />
           </div>
           <span className="font-display text-xl font-bold text-white tracking-tight">SPACE</span>
         </Link>
