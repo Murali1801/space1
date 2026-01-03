@@ -14,88 +14,82 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 p-4">
-      <nav className="max-w-5xl mx-auto flex items-center justify-between h-12 px-6 rounded-full bg-white/50 dark:bg-black/50 border border-zinc-200 dark:border-zinc-800/50 backdrop-blur-md relative">
-        <Link href="/" className="flex items-center gap-2 font-display text-lg font-semibold text-zinc-900 dark:text-zinc-100 z-50">
-          <span className="text-xl">Space</span>
+    <header className="fixed top-0 left-0 right-0 z-50 pt-6 px-6">
+      <nav className="max-w-7xl mx-auto flex items-center justify-between h-16 px-8 rounded-2xl bg-zinc-950 border border-zinc-800 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative">
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="w-4 h-4 bg-zinc-950 rounded-sm rotate-45" />
+          </div>
+          <span className="font-display text-xl font-bold text-white tracking-tight">SPACE</span>
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-2">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="px-4 py-1.5 text-sm rounded-full transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-xl transition-all"
             >
               {link.label}
             </Link>
           ))}
-          <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-800 mx-2" />
+          <div className="w-px h-6 bg-zinc-800 mx-4" />
           <Link
             href="/login"
-            className="px-4 py-1.5 text-sm rounded-full transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+            className="px-5 py-2 text-sm font-bold text-white hover:bg-zinc-900 rounded-xl transition-all"
           >
             Sign In
           </Link>
           <Link
             href="/signup"
-            className="px-4 py-1.5 text-sm rounded-full bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+            className="px-6 py-2 text-sm font-bold bg-white text-zinc-950 hover:bg-zinc-200 rounded-xl transition-all"
           >
             Get Started
           </Link>
         </div>
 
         {/* Mobile Menu Toggle */}
-        <div className="md:hidden flex items-center gap-4">
+        <div className="md:hidden">
           <button
-            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 z-50"
+            className="p-2 text-zinc-400 hover:text-white transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            {isMobileMenuOpen ? <X /> : <Menu />}
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
 
         {/* Mobile Navigation Dropdown */}
         {isMobileMenuOpen && (
-          <>
-            {/* Outer Blur Overlay */}
-            <div
-              className="fixed inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-sm md:hidden z-[-1]"
-              onClick={() => setIsMobileMenuOpen(false)}
-            />
-
-            <div className="absolute top-14 left-0 right-0 p-2 md:hidden">
-              {/* Inner Menu - Solid Background, No Blur */}
-              <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-2 flex flex-col shadow-2xl animate-in slide-in-from-top-2 fade-in duration-200">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="px-4 py-3 text-sm font-medium rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-                <div className="h-px bg-zinc-200 dark:bg-zinc-800 mx-4 my-2" />
+          <div className="absolute top-[calc(100%+12px)] left-0 right-0 md:hidden animate-in fade-in slide-in-from-top-4 duration-200">
+            <div className="mx-2 p-2 rounded-2xl bg-zinc-950 border border-zinc-800 shadow-2xl flex flex-col gap-1">
+              {navLinks.map((link) => (
                 <Link
-                  href="/login"
+                  key={link.href}
+                  href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="px-4 py-3 text-sm font-medium rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all text-center"
+                  className="px-4 py-4 text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-xl transition-all"
                 >
-                  Sign In
+                  {link.label}
                 </Link>
-                <Link
-                  href="/signup"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="mx-2 px-4 py-3 text-sm rounded-xl bg-zinc-900 text-zinc-100 dark:bg-white dark:text-black font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-center mt-1"
-                >
-                  Get Started
-                </Link>
-              </div>
+              ))}
+              <div className="h-px bg-zinc-800 my-1 mx-2" />
+              <Link
+                href="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-4 py-4 text-sm font-bold text-white hover:bg-zinc-900 rounded-xl transition-all"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/signup"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-4 py-4 text-sm font-bold bg-white text-zinc-950 hover:bg-zinc-200 rounded-xl transition-all text-center mt-1"
+              >
+                Get Started
+              </Link>
             </div>
-          </>
+          </div>
         )}
       </nav>
     </header>

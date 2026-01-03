@@ -7,32 +7,25 @@ const metrics = [
 
 export function ImpactSection() {
   return (
-    <section className="px-6 py-24 bg-zinc-900/20">
-      <div className="max-w-5xl mx-auto">
+    <section className="px-6 py-32 bg-black border-y border-zinc-900">
+      <div className="max-w-7xl mx-auto">
         {/* Impact Section Header */}
-        <div className="text-center mb-12">
-          <p className="text-sm font-medium text-zinc-500 uppercase tracking-wider mb-4">Our Impact</p>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-zinc-100 mb-4">Trusted by teams worldwide</h2>
-          <p className="text-zinc-500 max-w-lg mx-auto text-balance">
-            Numbers that speak for themselves. See why thousands choose us.
-          </p>
-        </div>
 
         {/* Metrics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {metrics.map((metric) => (
             <div
               key={metric.label}
-              className="p-6 rounded-2xl bg-zinc-900/50 border border-zinc-800/50 hover:border-zinc-700/50 hover:bg-zinc-900/80 transition-all duration-300 group text-center relative overflow-hidden"
+              className="p-10 rounded-3xl bg-zinc-900/40 border border-zinc-800 hover:border-zinc-700 transition-all duration-300 group text-center relative"
             >
-              {/* Subtle gradient on hover */}
-              <div className="absolute inset-0 bg-gradient-to-t from-zinc-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative">
-                <p className="font-display text-3xl md:text-4xl font-bold text-zinc-100 mb-1 group-hover:text-white transition-colors">
+              <div className="relative z-10 space-y-3">
+                <p className="font-display text-4xl md:text-5xl font-bold text-white group-hover:scale-105 transition-transform duration-500">
                   {metric.value}
                 </p>
-                <p className="text-sm font-medium text-zinc-400 mb-1">{metric.label}</p>
-                <p className="text-xs text-zinc-600">{metric.description}</p>
+                <div>
+                  <p className="text-sm font-bold text-zinc-300 tracking-tight">{metric.label}</p>
+                  <p className="text-xs font-medium text-zinc-500 mt-1">{metric.description}</p>
+                </div>
               </div>
             </div>
           ))}

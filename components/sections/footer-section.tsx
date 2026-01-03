@@ -23,26 +23,29 @@ const footerLinks = {
 
 export function FooterSection() {
   return (
-    <footer className="px-6 py-16 border-t border-zinc-900">
-      <div className="max-w-5xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+    <footer className="px-6 py-24 bg-black border-t border-zinc-900">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-12 gap-12 mb-20">
           {/* Brand */}
-          <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="font-display text-xl font-semibold text-zinc-100">
-              Acme
+          <div className="col-span-2 lg:col-span-4">
+            <Link href="/" className="flex items-center gap-2 group mb-6">
+              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center group-hover:scale-105 transition-transform">
+                <div className="w-4 h-4 bg-zinc-950 rounded-sm rotate-45" />
+              </div>
+              <span className="font-display text-xl font-bold text-white tracking-tight leading-none">SPACE</span>
             </Link>
-            <p className="mt-4 text-sm text-zinc-500 max-w-xs">
-              Build faster, ship smarter. The platform for modern teams.
+            <p className="text-sm text-zinc-500 max-w-xs leading-relaxed">
+              The next generation AI playground. Create stunning assets with world-class models at record speed.
             </p>
           </div>
 
-          {/* Product Links */}
-          <div>
-            <h4 className="font-heading text-sm font-semibold text-zinc-100 mb-4">Product</h4>
-            <ul className="space-y-3">
+          {/* Links Sections */}
+          <div className="lg:col-span-2">
+            <h4 className="text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-6">Product</h4>
+            <ul className="space-y-4">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+                  <Link href={link.href} className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -50,13 +53,12 @@ export function FooterSection() {
             </ul>
           </div>
 
-          {/* Company Links */}
-          <div>
-            <h4 className="font-heading text-sm font-semibold text-zinc-100 mb-4">Company</h4>
-            <ul className="space-y-3">
+          <div className="lg:col-span-2">
+            <h4 className="text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-6">Company</h4>
+            <ul className="space-y-4">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+                  <Link href={link.href} className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -64,13 +66,12 @@ export function FooterSection() {
             </ul>
           </div>
 
-          {/* Legal Links */}
-          <div>
-            <h4 className="font-heading text-sm font-semibold text-zinc-100 mb-4">Legal</h4>
-            <ul className="space-y-3">
+          <div className="lg:col-span-2">
+            <h4 className="text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-6">Legal</h4>
+            <ul className="space-y-4">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+                  <Link href={link.href} className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -80,16 +81,18 @@ export function FooterSection() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-zinc-900 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-zinc-600">© {new Date().getFullYear()} Acme Inc. All rights reserved.</p>
-          <div className="flex items-center gap-4">
-            <Link href="#" className="text-zinc-500 hover:text-zinc-300 transition-colors" aria-label="GitHub">
+        <div className="pt-12 border-t border-zinc-900 flex flex-col md:flex-row items-center justify-between gap-8">
+          <p className="text-xs font-medium text-zinc-600 uppercase tracking-widest">
+            © {new Date().getFullYear()} Space AI Inc. Designed for performance.
+          </p>
+          <div className="flex items-center gap-8">
+            <Link href="#" className="text-zinc-600 hover:text-white transition-colors" aria-label="GitHub">
               <Github className="w-5 h-5" />
             </Link>
-            <Link href="#" className="text-zinc-500 hover:text-zinc-300 transition-colors" aria-label="Twitter">
+            <Link href="#" className="text-zinc-600 hover:text-white transition-colors" aria-label="Twitter">
               <Twitter className="w-5 h-5" />
             </Link>
-            <Link href="#" className="text-zinc-500 hover:text-zinc-300 transition-colors" aria-label="LinkedIn">
+            <Link href="#" className="text-zinc-600 hover:text-white transition-colors" aria-label="LinkedIn">
               <Linkedin className="w-5 h-5" />
             </Link>
           </div>

@@ -49,70 +49,83 @@ const plans = [
 
 export function PricingSection() {
   return (
-    <section id="pricing" className="px-6 py-24">
-      <div className="max-w-5xl mx-auto">
+    <section id="pricing" className="px-6 py-32 bg-black">
+      <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <p className="text-sm font-medium text-zinc-500 uppercase tracking-wider mb-4">Pricing</p>
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-zinc-100 mb-4">
+        <div className="text-center mb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.3em] mb-4">Investment</p>
+          <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
             Simple, transparent pricing
           </h2>
-          <p className="text-zinc-500 max-w-xl mx-auto text-balance text-lg">
-            No hidden fees. No surprises. Choose the plan that works for you.
+          <p className="text-zinc-500 max-w-2xl mx-auto text-lg leading-relaxed">
+            Choose the plan that's right for you. All plans include 24/7 priority support and access to our latest models.
           </p>
         </div>
 
         {/* Pricing Grid */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`p-8 rounded-2xl border flex flex-col h-full ${
-                plan.highlighted ? "bg-zinc-100 border-zinc-100" : "bg-zinc-900/50 border-zinc-800/50"
-              }`}
+              className={`p-12 rounded-[40px] border flex flex-col h-full transition-all duration-500 hover:translate-y-[-8px] ${plan.highlighted
+                  ? "bg-white border-white shadow-[0_32px_64px_-12px_rgba(255,255,255,0.2)]"
+                  : "bg-zinc-900/40 border-zinc-800 hover:border-zinc-700"
+                }`}
             >
               {/* Plan Header */}
-              <div className="mb-6">
-                <h3
-                  className={`font-heading text-xl font-semibold mb-2 ${
-                    plan.highlighted ? "text-zinc-900" : "text-zinc-100"
-                  }`}
-                >
-                  {plan.name}
-                </h3>
-                <p className={`text-sm ${plan.highlighted ? "text-zinc-600" : "text-zinc-500"}`}>{plan.description}</p>
+              <div className="mb-10">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className={`text-2xl font-bold ${plan.highlighted ? "text-black" : "text-white"}`}>
+                    {plan.name}
+                  </h3>
+                  {plan.highlighted && (
+                    <span className="px-3 py-1 rounded-full bg-black text-[10px] font-bold text-white uppercase tracking-widest">
+                      Most Popular
+                    </span>
+                  )}
+                </div>
+                <p className={`text-sm font-medium leading-relaxed ${plan.highlighted ? "text-zinc-600" : "text-zinc-500"}`}>
+                  {plan.description}
+                </p>
               </div>
 
               {/* Price */}
-              <div className="mb-6">
-                <span
-                  className={`font-display text-4xl font-bold ${plan.highlighted ? "text-zinc-900" : "text-zinc-100"}`}
-                >
-                  {plan.price}
-                </span>
-                <span className={`text-sm ${plan.highlighted ? "text-zinc-600" : "text-zinc-500"}`}>{plan.period}</span>
+              <div className="mb-10">
+                <div className="flex items-baseline gap-1">
+                  <span className={`text-5xl font-display font-bold ${plan.highlighted ? "text-black" : "text-white"}`}>
+                    {plan.price}
+                  </span>
+                  <span className={`text-sm font-bold uppercase tracking-widest ${plan.highlighted ? "text-zinc-500" : "text-zinc-600"}`}>
+                    {plan.period}
+                  </span>
+                </div>
               </div>
 
               {/* Features */}
-              <ul className="space-y-3 mb-8 flex-1">
+              <ul className="space-y-4 mb-12 flex-1">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3">
-                    <Check className={`w-5 h-5 shrink-0 ${plan.highlighted ? "text-zinc-900" : "text-zinc-400"}`} />
-                    <span className={`text-sm ${plan.highlighted ? "text-zinc-700" : "text-zinc-400"}`}>{feature}</span>
+                  <li key={feature} className="flex items-start gap-4">
+                    <div className={`mt-1 h-5 w-5 rounded-full flex items-center justify-center shrink-0 ${plan.highlighted ? "bg-black" : "bg-zinc-800"
+                      }`}>
+                      <Check className={`w-3 h-3 ${plan.highlighted ? "text-white" : "text-zinc-400"}`} />
+                    </div>
+                    <span className={`text-sm font-medium ${plan.highlighted ? "text-zinc-800" : "text-zinc-400"}`}>
+                      {feature}
+                    </span>
                   </li>
                 ))}
               </ul>
 
               {/* CTA */}
-              <Link
-                href="#"
-                className={`block w-full py-3 px-6 text-center rounded-full font-medium text-sm transition-colors mt-auto ${
-                  plan.highlighted
-                    ? "bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
-                    : "bg-zinc-800 text-zinc-100 hover:bg-zinc-700"
-                }`}
-              >
-                {plan.cta}
+              <Link href="/signup">
+                <button
+                  className={`w-full py-5 px-8 rounded-2xl font-bold text-sm transition-all duration-300 ${plan.highlighted
+                      ? "bg-black text-white hover:bg-zinc-800 shadow-xl"
+                      : "bg-white text-black hover:bg-zinc-200"
+                    }`}
+                >
+                  {plan.cta}
+                </button>
               </Link>
             </div>
           ))}
