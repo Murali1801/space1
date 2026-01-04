@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { DashboardNavbar } from "@/components/dashboard/dashboard-navbar"
+
 import { useAuth } from "@/components/auth-provider"
 import { Loader2 } from "lucide-react"
 
@@ -36,9 +36,8 @@ export default function DashboardLayout({
         <div className="min-h-screen bg-black text-zinc-100 font-sans selection:bg-indigo-500/30 relative">
             {/* Ambient Background Removed */}
 
-            <div className="relative z-10">
-                <DashboardNavbar />
-                <main className="pt-24 px-4 md:px-6 pb-12">
+            <div className="relative z-10 h-full">
+                <main className="h-full">
                     <div className="w-full h-full">
                         {children}
                     </div>

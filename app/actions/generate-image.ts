@@ -8,7 +8,8 @@ export async function generateImage(
     options: {
         sampleImageSize?: string,
         aspectRatio?: string,
-        userId?: string
+        userId?: string,
+        referenceImage?: string // Base64 string
     } = {}
 ) {
     // Identify all available keys
@@ -48,10 +49,15 @@ export async function generateImage(
             const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${vertexModelId}:predict`
 
             // Construct Payload as per Imagen Docs
+            const instance: any = { prompt: prompt };
+            if (options.referenceImage) {
+                // Remove data URL prefix if present for raw base64
+                const base64Image = options.referenceImage.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
+                instance.image = { bytesBase64Encoded: base64Image };
+            }
+
             const payload = {
-                instances: [
-                    { prompt: prompt }
-                ],
+                instances: [instance],
                 parameters: {
                     sampleCount: 1,
                     sampleImageSize: options.sampleImageSize || "1K",

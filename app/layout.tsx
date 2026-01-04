@@ -13,26 +13,12 @@ const manrope = Manrope({
 })
 
 export const metadata: Metadata = {
-  title: "Liquid Metal Buttons | Premium UI Components",
-  description:
-    "A collection of premium button components featuring animated liquid metal borders powered by Paper Shaders.",
+  title: "Space | AI Workspace",
+  description: "Experience the next generation of AI collaboration.",
   generator: "v0.app",
   icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
-    apple: "/apple-icon.png",
+    icon: "/space-logo.png",
+    apple: "/space-logo.png",
   },
 }
 
@@ -48,6 +34,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=Instrument+Sans:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
       </head>
       <body className={`${manrope.variable} font-sans antialiased bg-background text-foreground`}>
         <AuthProvider>
