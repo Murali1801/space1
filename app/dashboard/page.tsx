@@ -718,6 +718,7 @@ interface Message {
     role: 'user' | 'bot';
     text: string;
     isLoading?: boolean;
+    attachments?: string[];
 }
 
 export default function GeminiClone() {
@@ -892,7 +893,8 @@ export default function GeminiClone() {
         const newUserMsg: Message = {
             id: userMsgId,
             role: 'user',
-            text: userText + (currentReferenceImages.length > 0 ? `\n[Attached ${currentReferenceImages.length} Image(s)]` : "")
+            text: userText,
+            attachments: currentReferenceImages
         };
         const updatedMessagesWithUser = [...messages, newUserMsg];
         setMessages(updatedMessagesWithUser);
@@ -1229,6 +1231,15 @@ export default function GeminiClone() {
                                                 )}
                                                 {msg.role === 'user' && (
                                                     <div className="group relative">
+                                                        {msg.attachments && msg.attachments.length > 0 && (
+                                                            <div className="flex flex-wrap gap-2 mb-2 justify-end">
+                                                                {msg.attachments.map((imgSrc, i) => (
+                                                                    <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-[#303134]">
+                                                                        <img src={imgSrc} alt={`Attachment ${i}`} className="w-full h-full object-cover" />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                         <div className="pr-8">{msg.text}</div>
                                                         <button
                                                             onClick={() => {
