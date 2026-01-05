@@ -320,7 +320,7 @@ const NavButton = ({ icon, label, isOpen }: { icon: React.ReactNode, label: stri
     </button>
 );
 
-const CustomDropdown = ({ options, value, onChange }: { options: string[], value: string, onChange: (v: string) => void }) => {
+const CustomDropdown = ({ options, value, onChange, direction = 'down' }: { options: string[], value: string, onChange: (v: string) => void, direction?: 'up' | 'down' }) => {
     const [isOpen, setIsOpen] = useState(false);
     return (
         <div className="relative">
@@ -334,7 +334,7 @@ const CustomDropdown = ({ options, value, onChange }: { options: string[], value
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-20" onClick={() => setIsOpen(false)} />
-                    <div className="absolute top-full left-0 mt-2 w-max min-w-[100px] bg-[#1e1f20] border border-[#303134] rounded-xl shadow-xl overflow-hidden z-30 flex flex-col py-1 animate-fade-in origin-top-left">
+                    <div className={`absolute ${direction === 'up' ? 'bottom-full mb-2 origin-bottom-left' : 'top-full mt-2 origin-top-left'} left-0 w-max min-w-[100px] bg-[#1e1f20] border border-[#303134] rounded-xl shadow-xl overflow-hidden z-30 flex flex-col py-1 animate-fade-in`}>
                         {options.map((opt) => (
                             <button
                                 key={opt}
@@ -651,6 +651,7 @@ const InputArea = ({
                                     options={['16:9', '4:3', '1:1', '3:4', '9:16']}
                                     value={imageAspectRatio}
                                     onChange={setImageAspectRatio}
+                                    direction={centered ? 'down' : 'up'}
                                 />
                             </div>
 
@@ -661,6 +662,7 @@ const InputArea = ({
                                     options={['Standard (1K)', '2k', '4k']}
                                     value={imageResolution}
                                     onChange={setImageResolution}
+                                    direction={centered ? 'down' : 'up'}
                                 />
                             </div>
                         </div>
@@ -679,6 +681,7 @@ const InputArea = ({
                                     options={['On', 'Off']}
                                     value={videoAudio}
                                     onChange={setVideoAudio}
+                                    direction={centered ? 'down' : 'up'}
                                 />
                             </div>
 
@@ -689,6 +692,7 @@ const InputArea = ({
                                     options={['16:9', '9:16', '1:1', '21:9']}
                                     value={videoAspectRatio}
                                     onChange={setVideoAspectRatio}
+                                    direction={centered ? 'down' : 'up'}
                                 />
                             </div>
 
@@ -699,6 +703,7 @@ const InputArea = ({
                                     options={['4 seconds', '6 seconds', '8 seconds']}
                                     value={videoDuration}
                                     onChange={setVideoDuration}
+                                    direction={centered ? 'down' : 'up'}
                                 />
                             </div>
                         </div>
