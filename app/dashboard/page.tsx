@@ -940,11 +940,11 @@ export default function GeminiClone() {
                             updateMessage(markdown, false);
                             setCanvasContent(`![Generated Image](${imageUrl})`);
                         } else {
-                            updateMessage("Sorry, image generation failed.", false);
+                            updateMessage(`Sorry, image generation failed. ${(res as any).error ? `Error: ${(res as any).error}` : ''}`, false);
                         }
                     }).catch(err => {
                         console.error(err);
-                        updateMessage("An unexpected error occurred during image generation.", false);
+                        updateMessage(`An unexpected error occurred during image generation. ${err.message}`, false);
                     });
 
                 } else if (activeTool === 'Create videos (Veo 3.1)') {

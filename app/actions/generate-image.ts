@@ -122,6 +122,9 @@ export async function generateImage(
         } catch (error: any) {
             lastError = error
             console.error(`❌ Image Generation: Failed with key ending in ...${selectedKey.slice(-10)}. Reason:`, error.message)
+            if (error.response?.data) {
+                console.error("API Error Details:", JSON.stringify(error.response.data, null, 2))
+            }
 
             // Continue to the next key for ANY error
             console.warn(`Attempt failed with current SA. Trying next available SA...`)
