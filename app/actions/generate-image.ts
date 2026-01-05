@@ -68,7 +68,7 @@ export async function generateImage(
                 instances: [instance],
                 parameters: {
                     sampleCount: 1,
-                    sampleImageSize: options.sampleImageSize || "1K",
+                    // sampleImageSize: options.sampleImageSize || "1K", // Not supported/needed for Imagen 3
                     aspectRatio: options.aspectRatio || "1:1",
                 }
             }
