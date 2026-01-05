@@ -87,6 +87,7 @@ export async function generateImage(
             })
 
             console.log("✅ Image Generation: Success")
+            console.log("Raw Response:", JSON.stringify(res.data, null, 2))
 
             const predictions = (res.data as any).predictions
             if (predictions && predictions.length > 0) {
