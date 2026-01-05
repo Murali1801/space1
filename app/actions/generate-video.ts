@@ -136,19 +136,11 @@ export async function generateVideo(
 
         } catch (error: any) {
             lastError = error
-            const errorStatus = error.response?.status
-            const errorMessage = error.message || ""
+            console.error(`Error with key ending in ...${selectedKey.slice(-10)}:`, error.message)
 
-            // If it's a quota or rate limit error, continue to the next key
-            // Note: We only retry if the INITIAL request fails. 
-            // If it fails during polling, it's tied to this op/project anyway.
-            if (errorStatus === 429 || (errorStatus === 403 && errorMessage.toLowerCase().includes("quota"))) {
-                console.warn(`SA quota exhausted for a project during video start. Trying next available SA...`)
-                continue
-            }
-
-            console.error("Non-recoverable error during video generation:", error)
-            break
+            // Retry for ANY error during the initial request
+            console.warn(`Attempt failed with current SA. Trying next available SA...`)
+            continue
         }
     }
 

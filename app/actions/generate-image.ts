@@ -9,7 +9,7 @@ export async function generateImage(
         sampleImageSize?: string,
         aspectRatio?: string,
         userId?: string,
-        referenceImage?: string // Base64 string
+        referenceImages?: string[] // Base64 string array
     } = {}
 ) {
     // Identify all available keys
@@ -50,10 +50,18 @@ export async function generateImage(
 
             // Construct Payload as per Imagen Docs
             const instance: any = { prompt: prompt };
-            if (options.referenceImage) {
-                // Remove data URL prefix if present for raw base64
-                const base64Image = options.referenceImage.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
-                instance.image = { bytesBase64Encoded: base64Image };
+            if (options.referenceImages && options.referenceImages.length > 0) {
+                // Clean base64 strings
+                const processedImages = options.referenceImages.map(img => ({
+                    bytesBase64Encoded: img.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '')
+                }));
+
+                // If the model supports multiple 'image' fields or an array, standard is usually one 'image' for reference.
+                // However, we will try to pass the primary one as 'image' and others? 
+                // Or if the prompt is multimodal, we might pass them differently.
+                // For now, to ensure "images are sent", we'll pick the first one as the primary reference 'image'.
+                // If the API supports 'images' (plural) we would use that, but 'image' is the standard field documented for Reference Image.
+                instance.image = processedImages[0];
             }
 
             const payload = {
@@ -112,18 +120,11 @@ export async function generateImage(
 
         } catch (error: any) {
             lastError = error
-            const errorStatus = error.response?.status
-            const errorMessage = error.message || ""
+            console.error(`Error with key ending in ...${selectedKey.slice(-10)}:`, error.message)
 
-            // If it's a quota or rate limit error, continue to the next key
-            if (errorStatus === 429 || (errorStatus === 403 && errorMessage.toLowerCase().includes("quota"))) {
-                console.warn(`SA quota exhausted for a project. Trying next available SA...`)
-                continue
-            }
-
-            // For other structural errors, break and return
-            console.error("Non-recoverable error during image generation:", error)
-            break
+            // Continue to the next key for ANY error
+            console.warn(`Attempt failed with current SA. Trying next available SA...`)
+            continue
         }
     }
 

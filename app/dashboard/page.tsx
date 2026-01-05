@@ -42,7 +42,8 @@ import {
     Terminal,
     SlidersHorizontal,
     Download,
-    Trash2
+    Trash2,
+    Copy,
 } from 'lucide-react';
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
@@ -134,7 +135,7 @@ const handleDownload = async (url: string, filename: string) => {
     }
 };
 
-const renderMixedContent = (text: string, isCanvas: boolean = false) => {
+const renderMixedContent = (text: string, isCanvas: boolean = false, onUseData?: (url: string) => void) => {
     // Regex for Image Markdown
     const imageRegex = /!\[Generated Image\]\((.*?)\)/;
     // Regex for Video HTML
@@ -149,19 +150,31 @@ const renderMixedContent = (text: string, isCanvas: boolean = false) => {
         return (
             <div className="flex flex-col gap-4">
                 {parts[0] && <div className={isCanvas ? "whitespace-pre-wrap" : "whitespace-pre-wrap mb-1"}>{isCanvas && parts[0].trim() ? highlightSyntax(parts[0]) : parts[0]}</div>}
-                <div className={`relative group/${isCanvas ? 'canvas-' : ''}image self-start`}>
+                <div className="relative group self-start">
                     <img
                         src={imageUrl}
                         alt="Generated"
+                        draggable={true} // Allow dragging
                         className={`rounded-xl shadow-lg border border-[#303134] ${isCanvas ? 'max-h-full object-contain' : 'max-w-full'}`}
                     />
-                    <button
-                        onClick={() => handleDownload(imageUrl, `generated-${isCanvas ? 'canvas-' : ''}image-${Date.now()}.png`)}
-                        className={`absolute top-2 right-2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full opacity-0 group-hover/${isCanvas ? 'canvas-' : ''}image:opacity-100 transition-opacity`}
-                        title="Download Image"
-                    >
-                        <Download size={isCanvas ? 20 : 16} />
-                    </button>
+                    <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {onUseData && !isCanvas && (
+                            <button
+                                onClick={() => onUseData(imageUrl)}
+                                className="p-2 bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors backdrop-blur-sm"
+                                title="Add to Prompt"
+                            >
+                                <Plus size={16} />
+                            </button>
+                        )}
+                        <button
+                            onClick={() => handleDownload(imageUrl, `generated-${isCanvas ? 'canvas-' : ''}image-${Date.now()}.png`)}
+                            className="p-2 bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors backdrop-blur-sm"
+                            title="Download Image"
+                        >
+                            <Download size={isCanvas ? 20 : 16} />
+                        </button>
+                    </div>
                 </div>
                 {parts[1] && <div className={isCanvas ? "whitespace-pre-wrap" : "whitespace-pre-wrap mt-1"}>{isCanvas && parts[1].trim() ? highlightSyntax(parts[1]) : parts[1]}</div>}
             </div>
@@ -174,11 +187,11 @@ const renderMixedContent = (text: string, isCanvas: boolean = false) => {
         return (
             <div className="flex flex-col gap-4">
                 {parts[0] && <div className="whitespace-pre-wrap mb-1">{isCanvas && parts[0].trim() ? highlightSyntax(parts[0]) : parts[0]}</div>}
-                <div className={`relative group/${isCanvas ? 'canvas-' : ''}video self-start`}>
+                <div className="relative group self-start">
                     <video src={videoUrl} controls className={`max-w-full rounded-xl shadow-lg border border-[#303134] ${isCanvas ? 'max-h-full' : ''}`} />
                     <button
                         onClick={() => handleDownload(videoUrl, `generated-${isCanvas ? 'canvas-' : ''}video-${Date.now()}.mp4`)}
-                        className={`absolute top-2 right-2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full opacity-0 group-hover/${isCanvas ? 'canvas-' : ''}video:opacity-100 transition-opacity z-10`}
+                        className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 backdrop-blur-sm"
                         title="Download Video"
                     >
                         <Download size={isCanvas ? 20 : 16} />
@@ -215,14 +228,9 @@ const ACTION_PILLS = [
 const TOOLS_ITEMS = [
     { label: 'Create videos (Veo 3.1)', shortLabel: 'Video', icon: <Clapperboard size={20} className="text-[#e3e3e3]" /> },
     { label: 'Create images', shortLabel: 'Image', icon: <ImageIcon size={20} className="text-[#e3e3e3]" /> },
-    { label: 'Canvas', shortLabel: 'Canvas', icon: <StickyNote size={20} className="text-[#e3e3e3]" /> },
 ];
 
-const MODELS = [
-    { id: 'fast', label: 'Fast', desc: 'Answers quickly' },
-    { id: 'thinking', label: 'Thinking', desc: 'Solves complex problems' },
-    { id: 'pro', label: 'Pro', desc: 'Thinks longer for advanced math & code' },
-];
+
 
 // --- Sub-Components ---
 
@@ -361,11 +369,11 @@ const InputArea = ({
     videoAudio, setVideoAudio,
     videoAspectRatio, setVideoAspectRatio,
     videoDuration, setVideoDuration,
-    referenceImage, setReferenceImage,
+    referenceImages, setReferenceImages,
     fileInputRef, handleFileSelect
 }: {
     input: string,
-    setInput: (v: string) => void,
+    setInput: React.Dispatch<React.SetStateAction<string>>,
     handleSend: (model: string) => void,
     canvasOpen: boolean,
     toggleCanvas: () => void,
@@ -381,13 +389,14 @@ const InputArea = ({
     videoAudio: string, setVideoAudio: (v: string) => void,
     videoAspectRatio: string, setVideoAspectRatio: (v: string) => void,
     videoDuration: string, setVideoDuration: (v: string) => void,
-    referenceImage: string | null, setReferenceImage: (v: string | null) => void,
-    fileInputRef: React.RefObject<HTMLInputElement>,
+    referenceImages: string[], setReferenceImages: React.Dispatch<React.SetStateAction<string[]>>,
+    fileInputRef: React.RefObject<HTMLInputElement | null>,
     handleFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void
 }) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const recognitionRef = useRef<any>(null);
     const [showModelSelector, setShowModelSelector] = useState(false);
-    const [selectedModel, setSelectedModel] = useState('Pro');
+    const [isListening, setIsListening] = useState(false);
 
     // Initialize sidebar state based on screen size
     useEffect(() => {
@@ -413,33 +422,120 @@ const InputArea = ({
         }
     }, [input]);
 
+    const handleMicClick = () => {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert('Speech recognition is not supported in this browser.');
+            return;
+        }
+
+        if (isListening) {
+            recognitionRef.current?.stop();
+            setIsListening(false);
+            return;
+        }
+
+        const recognition = new (window as any).webkitSpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => setIsListening(true);
+        recognition.onend = () => setIsListening(false);
+
+        recognition.onerror = (event: any) => {
+            if (event.error === 'no-speech') {
+                console.log('Mic: No speech detected (timeout). Stopping.');
+            } else {
+                console.error('Mic error:', event.error);
+            }
+            setIsListening(false);
+        };
+
+        recognition.onresult = (event: any) => {
+            let newTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    newTranscript += event.results[i][0].transcript;
+                }
+            }
+            if (newTranscript) {
+                console.log('Mic result:', newTranscript);
+                setInput((prev: string) => prev + (prev ? ' ' : '') + newTranscript);
+            }
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+    };
+
+    const handleDrop = async (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // 1. Handle Files
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            Array.from(e.dataTransfer.files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const result = reader.result as string;
+                        setReferenceImages(prev => [...prev, result]);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            return;
+        }
+
+        // 2. Handle HTML Elements (dragging image from chat)
+        const html = e.dataTransfer.getData('text/html');
+        if (html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const img = doc.querySelector('img');
+            if (img && img.src) {
+                setReferenceImages(prev => [...prev, img.src]);
+            }
+        }
+    };
+
     return (
         <div className={`w-full ${centered ? '' : 'bg-black px-2 pb-0 pt-2 md:px-4 md:pb-4'}`}>
-            <div className={`max-w-3xl mx-auto relative bg-[#0b0b0b] rounded-[24px] transition-all duration-200 border ${input ? 'border-[#e3e3e3]/20' : 'border-transparent'}`}>
+            <div
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDrop={handleDrop}
+                className={`max-w-3xl mx-auto relative bg-[#0b0b0b] rounded-[24px] transition-all duration-200 border ${input ? 'border-[#e3e3e3]/20' : 'border-transparent'}`}
+            >
 
                 {/* Text Input Area (Top) */}
                 <textarea
                     ref={textareaRef}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend(selectedModel))}
+                    onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend('imagen-3.0-generate-001'))}
                     placeholder="Ask Space"
                     rows={1}
                     className="w-full bg-transparent text-[#e3e3e3] placeholder-[#8e918f] text-[16px] resize-none focus:outline-none py-4 px-5 min-h-[56px] max-h-[200px]"
                 />
 
                 {/* Reference Image Preview */}
-                {referenceImage && (
-                    <div className="px-5 pb-4">
-                        <div className="relative inline-block group">
-                            <img src={referenceImage} alt="Reference" className="h-16 w-16 object-cover rounded-lg border border-[#303134]" />
-                            <button
-                                onClick={() => setReferenceImage(null)}
-                                className="absolute -top-1 -right-1 bg-[#1e1f20] rounded-full p-0.5 text-[#c4c7c5] hover:text-[#ff9898] border border-[#303134]"
-                            >
-                                <X size={12} />
-                            </button>
-                        </div>
+                {referenceImages.length > 0 && (
+                    <div className="px-5 pb-4 flex gap-2 overflow-x-auto">
+                        {referenceImages.map((img, idx) => (
+                            <div key={idx} className="relative inline-block group flex-shrink-0">
+                                <img src={img} alt={`Reference ${idx}`} className="h-16 w-16 object-cover rounded-lg border border-[#303134]" />
+                                <button
+                                    onClick={() => {
+                                        const newImages = [...referenceImages];
+                                        newImages.splice(idx, 1);
+                                        setReferenceImages(newImages);
+                                    }}
+                                    className="absolute -top-1 -right-1 bg-[#1e1f20] rounded-full p-0.5 text-[#c4c7c5] hover:text-[#ff9898] border border-[#303134]"
+                                >
+                                    <X size={12} />
+                                </button>
+                            </div>
+                        ))}
                     </div>
                 )}
 
@@ -461,41 +557,19 @@ const InputArea = ({
                                     fileInputRef.current.click();
                                 }
                             }}
-                            className={`p-2 rounded-full hover:bg-[#1f1f1f] transition-colors ${referenceImage ? 'text-[#a8c7fa] bg-[#004a77]/30' : 'text-[#e3e3e3]'}`}
+                            className={`p-2 rounded-full hover:bg-[#1f1f1f] transition-colors ${referenceImages.length > 0 ? 'text-[#a8c7fa] bg-[#004a77]/30' : 'text-[#e3e3e3]'}`}
                         >
                             <span className="material-symbols-outlined text-[#c4c7c5]">add</span>
                         </button>
 
                         <div className="relative flex items-center gap-2">
-                            {/* Canvas Control */}
-                            {canvasOpen ? (
-                                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0b0b0b] border border-[#303134] text-[#a8c7fa] transition-colors cursor-default select-none animate-fade-in shadow-sm">
-                                    <StickyNote size={18} className="text-[#a8c7fa]" />
-                                    <span className="text-sm font-medium">Canvas</span>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); setCanvasOpen(false); }}
-                                        className="hover:text-white ml-1 p-0.5 rounded-full hover:bg-[#303134] transition-colors"
-                                    >
-                                        <X size={14} />
-                                    </button>
-                                </div>
-                            ) : (
-                                <button
-                                    onClick={() => toggleCanvas()}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-[#1f1f1f] transition-colors"
-                                >
-                                    <StickyNote size={20} className="text-[#c4c7c5]" />
-                                    <span className="text-sm font-medium text-[#c4c7c5] hidden md:inline">Canvas</span>
-                                </button>
-                            )}
-
                             {/* Tools Control */}
-                            {activeTool && activeTool !== 'Canvas' ? (() => {
+                            {activeTool ? (() => {
                                 const activeItem = TOOLS_ITEMS.find(t => t.label === activeTool);
                                 if (!activeItem) return null;
                                 return (
                                     <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0b0b0b] border border-[#303134] text-[#a8c7fa] transition-colors cursor-default select-none animate-fade-in shadow-sm">
-                                        {React.cloneElement(activeItem.icon as React.ReactElement, { size: 18, className: "text-[#a8c7fa]" })}
+                                        {React.cloneElement(activeItem.icon as any, { size: 18, className: "text-[#a8c7fa]" })}
                                         <span className="text-sm font-medium">{activeItem.shortLabel}</span>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setActiveTool(null); }}
@@ -521,16 +595,11 @@ const InputArea = ({
                                     <div className="fixed inset-0 z-30" onClick={() => setShowTools(false)}></div>
                                     <div className={`absolute ${centered ? 'top-full mt-3 origin-top-left' : 'bottom-full mb-3 origin-bottom-left'} left-0 w-72 bg-[#0b0b0b] rounded-[24px] shadow-2xl border border-[#303134] overflow-hidden py-3 z-40 animate-fade-in ring-1 ring-white/10`}>
                                         <div className="flex flex-col">
-                                            {TOOLS_ITEMS.filter(t => t.label !== 'Canvas').map((tool, idx) => (
+                                            {TOOLS_ITEMS.map((tool, idx) => (
                                                 <button
                                                     key={idx}
                                                     onClick={() => {
-                                                        if (tool.label === 'Canvas') {
-                                                            toggleCanvas();
-                                                            setActiveTool(null); // Clear active tool if entering canvas
-                                                        } else {
-                                                            setActiveTool(tool.label);
-                                                        }
+                                                        setActiveTool(tool.label);
                                                         setShowTools(false);
                                                     }}
                                                     className="w-full text-left px-5 py-3 hover:bg-[#303134] flex items-center gap-4 text-[#e3e3e3] transition-colors group"
@@ -555,51 +624,15 @@ const InputArea = ({
 
                     {/* Right Side: Pro, Mic, Send */}
                     <div className="flex items-center gap-2 relative">
-                        <div>
-                            <button
-                                onClick={() => setShowModelSelector(!showModelSelector)}
-                                className={`flex items-center gap-1 px-3 py-1.5 rounded-full hover:bg-[#1f1f1f] text-[#c4c7c5] transition-colors ${showModelSelector ? 'bg-[#1f1f1f]' : ''}`}
-                            >
-                                <span className="text-sm font-medium">{selectedModel}</span>
-                                <ChevronDown size={14} className={`transition-transform duration-200 ${showModelSelector ? 'rotate-180' : ''}`} />
-                            </button>
-
-                            {/* Model Selector Popup */}
-                            {showModelSelector && (
-                                <>
-                                    <div className="fixed inset-0 z-30" onClick={() => setShowModelSelector(false)}></div>
-                                    <div className={`absolute ${centered ? 'top-full mt-3 origin-top-right' : 'bottom-full mb-3 origin-bottom-right'} right-0 w-[280px] bg-[#0b0b0b] rounded-[18px] shadow-2xl p-2 z-40 animate-fade-in ring-1 ring-white/10 border border-[#303134]`}>
-                                        <div className="px-3 py-2 text-sm font-medium text-[#c4c7c5] mb-1">Gemini 3</div>
-                                        <div className="flex flex-col gap-1">
-                                            {MODELS.map((model) => (
-                                                <button
-                                                    key={model.id}
-                                                    onClick={() => { setSelectedModel(model.label); setShowModelSelector(false); }}
-                                                    className="flex items-start justify-between p-3 rounded-xl hover:bg-[#303134] transition-colors text-left group"
-                                                >
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-medium text-[#e3e3e3]">{model.label}</span>
-                                                        <span className="text-xs text-[#c4c7c5]">{model.desc}</span>
-                                                    </div>
-                                                    {selectedModel === model.label && (
-                                                        <div className="text-[#a8c7fa] bg-[#004a77] rounded-full p-0.5 mt-1">
-                                                            <Check size={12} strokeWidth={4} />
-                                                        </div>
-                                                    )}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-
-                        <button className="p-2.5 rounded-full hover:bg-[#1f1f1f] text-[#e3e3e3] transition-colors">
+                        <button
+                            onClick={handleMicClick}
+                            className={`p-2.5 rounded-full hover:bg-[#1f1f1f] transition-colors ${isListening ? 'bg-[#4285f4]/20 text-[#4285f4] animate-pulse' : 'text-[#e3e3e3]'}`}
+                        >
                             <Mic size={20} />
                         </button>
 
                         {input && (
-                            <button onClick={handleSend} className="p-2.5 rounded-full bg-[#e3e3e3] text-black hover:opacity-90 transition-opacity animate-fade-in">
+                            <button onClick={() => handleSend('imagen-3.0-generate-001')} className="p-2.5 rounded-full bg-[#e3e3e3] text-black hover:opacity-90 transition-opacity animate-fade-in">
                                 <Send size={18} className="ml-0.5" />
                             </button>
                         )}
@@ -713,17 +746,19 @@ export default function GeminiClone() {
     const [videoDuration, setVideoDuration] = useState('4 seconds');
 
     // Reference Image State
-    const [referenceImage, setReferenceImage] = useState<string | null>(null);
+    const [referenceImages, setReferenceImages] = useState<string[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setReferenceImage(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setReferenceImages(prev => [...prev, reader.result as string]);
+                };
+                reader.readAsDataURL(file);
+            });
         }
     };
 
@@ -837,18 +872,27 @@ export default function GeminiClone() {
     };
 
     const handleSend = async (selectedModel: string) => {
-        if (!input.trim() && !referenceImage) return;
+        if (!input.trim() && referenceImages.length === 0) return;
         const userText = input;
         setInput('');
-        const currentReferenceImage = referenceImage; // Capture current image
-        setReferenceImage(null); // Clear after sending
+
+        // Process references: Ensure all are Base64
+        const processedReferences = await Promise.all(referenceImages.map(async (img) => {
+            if (img.startsWith('http')) {
+                return await urlToBase64(img);
+            }
+            return img;
+        }));
+
+        const currentReferenceImages = processedReferences;
+        setReferenceImages([]); // Clear after sending
 
         // Add User Message
         const userMsgId = crypto.randomUUID();
         const newUserMsg: Message = {
             id: userMsgId,
             role: 'user',
-            text: userText + (currentReferenceImage ? "\n[Attached Image]" : "")
+            text: userText + (currentReferenceImages.length > 0 ? `\n[Attached ${currentReferenceImages.length} Image(s)]` : "")
         };
         const updatedMessagesWithUser = [...messages, newUserMsg];
         setMessages(updatedMessagesWithUser);
@@ -880,7 +924,7 @@ export default function GeminiClone() {
                         sampleImageSize: imageResolution.includes('2k') ? '2K' : (imageResolution.includes('4k') ? '4K' : '1K'),
                         aspectRatio: imageAspectRatio,
                         userId: user?.uid,
-                        referenceImage: currentReferenceImage || undefined
+                        referenceImages: currentReferenceImages
                     }).then(res => {
                         if (res.success && (res as any).imageUrl) {
                             const imageUrl = (res as any).imageUrl;
@@ -984,6 +1028,32 @@ export default function GeminiClone() {
     };
 
     const initialView = messages.length === 0 && !streamedText;
+
+    // Base64 helper
+    const urlToBase64 = async (url: string): Promise<string> => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch (error) {
+            console.error("Error converting URL to base64:", error);
+            return url;
+        }
+    };
+
+    const handleSetReference = async (urlOrBase64: string) => {
+        if (urlOrBase64.startsWith('http')) {
+            const base64 = await urlToBase64(urlOrBase64);
+            setReferenceImages(prev => [...prev, base64]);
+        } else {
+            setReferenceImages(prev => [...prev, urlOrBase64]);
+        }
+    };
 
     return (
         <div className="flex h-screen bg-black text-[#e3e3e3] font-sans overflow-hidden">
@@ -1093,10 +1163,10 @@ export default function GeminiClone() {
 
                 {/* Content Split: Chat + Canvas */}
                 {/* Main Content Area */}
-                <main className={`flex-1 flex ${canvasOpen ? 'flex-row' : 'flex-col'} relative overflow-hidden`}>
+                <main className="flex-1 flex flex-col relative overflow-hidden">
 
                     {/* Chat Area */}
-                    <div className={`flex flex-col h-full bg-black transition-all duration-300 ${canvasOpen ? 'hidden lg:flex lg:w-[45%]' : 'w-full'}`}>
+                    <div className="flex flex-col h-full bg-black transition-all duration-300 w-full">
                         {initialView ? (
                             <div className="flex-1 flex flex-col items-center justify-center p-4">
                                 <div className="text-44xl md:text-5xl font-medium text-[#444746] mb-8 text-center tracking-tight">
@@ -1120,7 +1190,7 @@ export default function GeminiClone() {
                                     videoAudio={videoAudio} setVideoAudio={setVideoAudio}
                                     videoAspectRatio={videoAspectRatio} setVideoAspectRatio={setVideoAspectRatio}
                                     videoDuration={videoDuration} setVideoDuration={setVideoDuration}
-                                    referenceImage={referenceImage} setReferenceImage={setReferenceImage}
+                                    referenceImages={referenceImages} setReferenceImages={setReferenceImages}
                                     fileInputRef={fileInputRef} handleFileSelect={handleFileSelect}
                                 />
                             </div>
@@ -1150,14 +1220,30 @@ export default function GeminiClone() {
                                                                 </div>
                                                             ) : (
                                                                 <>
-                                                                    {/* Render Mixed Content using helper */}
-                                                                    {renderMixedContent(msg.text, false)}
+                                                                    {/* Render Mixed Content with Use Callback */}
+                                                                    {renderMixedContent(msg.text, false, handleSetReference)}
                                                                 </>
                                                             )}
                                                         </div>
                                                     </div>
                                                 )}
-                                                {msg.role === 'user' && msg.text}
+                                                {msg.role === 'user' && (
+                                                    <div className="group relative">
+                                                        <div className="pr-8">{msg.text}</div>
+                                                        <button
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(msg.text);
+                                                            }}
+                                                            className="absolute -top-1 -right-2 p-1.5 text-[#c4c7c5] hover:text-white bg-[#303134]/50 hover:bg-[#303134] rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200"
+                                                            title="Copy Prompt"
+                                                        >
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -1209,36 +1295,14 @@ export default function GeminiClone() {
                                         videoAudio={videoAudio} setVideoAudio={setVideoAudio}
                                         videoAspectRatio={videoAspectRatio} setVideoAspectRatio={setVideoAspectRatio}
                                         videoDuration={videoDuration} setVideoDuration={setVideoDuration}
-                                        referenceImage={referenceImage} setReferenceImage={setReferenceImage}
+                                        referenceImages={referenceImages} setReferenceImages={setReferenceImages}
                                         fileInputRef={fileInputRef} handleFileSelect={handleFileSelect}
                                     />
                                 </div>
                             </div>
                         )}
                     </div>
-
-                    {/* Canvas Area (Split View) */}
-                    {canvasOpen && (
-                        <div className="flex-1 h-full bg-black p-2 md:p-4 animate-fade-in w-full lg:w-auto">
-                            <div className="w-full h-full bg-[#0b0b0b] rounded-[24px] border border-[#303134] overflow-hidden relative flex flex-col">
-                                <button
-                                    onClick={() => setCanvasOpen(false)}
-                                    className="absolute top-4 right-4 p-2 rounded-full hover:bg-[#1f1f1f] text-[#c4c7c5] hover:text-[#e3e3e3] transition-colors z-10"
-                                >
-                                    <X size={20} />
-                                </button>
-                                <div className="flex-1 px-8 pb-8 pt-20 overflow-auto font-mono text-sm custom-scrollbar bg-[#0b0b0b] flex flex-col">
-                                    {canvasContent ? (
-                                        renderMixedContent(canvasContent, true)
-                                    ) : (
-                                        <span className="text-[#8e918f] self-start">// Start typing...</span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </main>
-
             </div>
         </div>
     );
