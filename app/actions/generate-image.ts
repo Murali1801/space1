@@ -73,6 +73,7 @@ export async function generateImage(
                 }
             }
 
+            console.log(`📷 Image Generation: Started with prompt: "${prompt}"`)
             console.log(`Generating image with ${vertexModelId} using Project: ${projectId}...`)
 
             const res = await client.request({
@@ -85,7 +86,7 @@ export async function generateImage(
                 data: payload,
             })
 
-            console.log("Vertex AI Image Response Success.")
+            console.log("✅ Image Generation: Success")
 
             const predictions = (res.data as any).predictions
             if (predictions && predictions.length > 0) {
@@ -120,7 +121,7 @@ export async function generateImage(
 
         } catch (error: any) {
             lastError = error
-            console.error(`Error with key ending in ...${selectedKey.slice(-10)}:`, error.message)
+            console.error(`❌ Image Generation: Failed with key ending in ...${selectedKey.slice(-10)}. Reason:`, error.message)
 
             // Continue to the next key for ANY error
             console.warn(`Attempt failed with current SA. Trying next available SA...`)

@@ -43,6 +43,7 @@ export async function generateVideo(
             // 1. Start Operation
             const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${modelId}:predictLongRunning`
 
+            console.log(`🎥 Video Generation: Started with prompt: "${prompt}"`)
             console.log(`Starting video generation with ${modelId} using Project: ${projectId}...`)
 
             const res = await client.request({
@@ -119,6 +120,7 @@ export async function generateVideo(
                         }
 
                         if (finalUrl) {
+                            console.log("✅ Video Generation: Success")
                             return {
                                 success: true,
                                 videoUrl: finalUrl,
@@ -136,7 +138,7 @@ export async function generateVideo(
 
         } catch (error: any) {
             lastError = error
-            console.error(`Error with key ending in ...${selectedKey.slice(-10)}:`, error.message)
+            console.error(`❌ Video Generation: Failed with key ending in ...${selectedKey.slice(-10)}. Reason:`, error.message)
 
             // Retry for ANY error during the initial request
             console.warn(`Attempt failed with current SA. Trying next available SA...`)
