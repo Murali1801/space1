@@ -87,6 +87,18 @@ export async function generateImage(
             })
 
             console.log("✅ Image Generation: Success")
+
+            // Log to file for debugging
+            try {
+                const fs = require('fs');
+                const path = require('path');
+                const logPath = path.join(process.cwd(), 'api_debug_log.json');
+                fs.writeFileSync(logPath, JSON.stringify(res.data, null, 2));
+                console.log("Raw response written to:", logPath);
+            } catch (err) {
+                console.error("Failed to write debug log:", err);
+            }
+
             console.log("Raw Response:", JSON.stringify(res.data, null, 2))
 
             const predictions = (res.data as any).predictions
